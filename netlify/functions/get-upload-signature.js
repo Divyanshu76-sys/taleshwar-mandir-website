@@ -14,6 +14,7 @@ exports.handler = async function (event) {
     }
 
     const timestamp = Math.round(Date.now() / 1000);
+    const contextParam = event.queryStringParameters && event.queryStringParameters.context;
 
     // Params that will be signed. Must match exactly what the browser sends to Cloudinary.
     const paramsToSign = {
@@ -21,6 +22,9 @@ exports.handler = async function (event) {
       folder: 'mandir-videos',
       tags: 'mandir-video'
     };
+    if (contextParam) {
+      paramsToSign.context = contextParam;
+    }
 
     // Build the string to sign, sorted alphabetically by key, per Cloudinary's spec.
     const sortedKeys = Object.keys(paramsToSign).sort();
@@ -42,7 +46,8 @@ exports.handler = async function (event) {
         apiKey,
         cloudName,
         folder: paramsToSign.folder,
-        tags: paramsToSign.tags
+        tags: paramsToSign.tags,
+        context: paramsToSign.context || null
       })
     };
   } catch (err) {
