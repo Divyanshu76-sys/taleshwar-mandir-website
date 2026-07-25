@@ -1,10 +1,10 @@
 exports.handler = async function () {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.geminikey;
     if (!apiKey) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Server par GEMINI_API_KEY set nahi hai.' })
+        body: JSON.stringify({ error: 'Server par geminikey set nahi hai.' })
       };
     }
 
