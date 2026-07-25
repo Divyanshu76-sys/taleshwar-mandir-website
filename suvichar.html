@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>सुविचार | श्री तालेश्वर महादेव मंदिर</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Eczar:wght@400;600;700&family=Mukta:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<style>
+  :root {
+    --maroon:#7A1F1F; --maroon-deep:#5C1414; --saffron:#E8A317; --gold:#C9962E;
+    --cream:#FFF8ED; --cream-warm:#FBF1DD; --charcoal:#2B2320;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--cream); color:var(--charcoal); font-family:'Mukta', sans-serif; }
+  .wrap { max-width:760px; margin:0 auto; padding:40px 20px 80px; }
+  .back { display:inline-flex; align-items:center; gap:8px; color:var(--maroon); text-decoration:none; font-weight:600; margin-bottom:24px; font-size:1rem; }
+  h1 { font-family:'Eczar',serif; color:var(--maroon-deep); text-align:center; font-size:2.2rem; margin:0 0 30px; }
+
+  .suvichar-card {
+    background:var(--cream-warm); border-radius:16px; padding:40px 30px;
+    text-align:center; border-left:5px solid var(--saffron);
+    box-shadow:0 8px 24px rgba(122,31,31,0.12); margin-bottom:40px;
+  }
+  .suvichar-text {
+    font-family:'Tiro Devanagari Hindi',serif; font-size:1.4rem; line-height:2;
+    color:var(--maroon-deep);
+  }
+  .suvichar-date { margin-top:16px; color:var(--maroon); font-size:0.9rem; }
+
+  .login-bar { text-align:center; margin-bottom:24px; }
+  .login-bar button {
+    background:var(--maroon-deep); color:#fff; border:none; padding:10px 18px;
+    border-radius:8px; cursor:pointer; font-weight:600;
+  }
+
+  .admin-box {
+    background:var(--cream-warm); border:2px dashed var(--gold); border-radius:14px;
+    padding:24px; margin:0 auto 40px; display:none;
+  }
+  .admin-box.show { display:block; }
+  .admin-box h3 { margin-top:0; color:var(--maroon-deep); font-family:'Eczar',serif; }
+  .admin-box textarea {
+    width:100%; min-height:100px; padding:12px; margin:12px 0;
+    border:1px solid var(--gold); border-radius:8px; font-family:'Tiro Devanagari Hindi',serif;
+    font-size:1.1rem; resize:vertical;
+  }
+  .admin-box button.action {
+    background:var(--maroon); color:#fff; border:none; padding:10px 20px;
+    border-radius:8px; font-weight:600; cursor:pointer; font-size:0.95rem; margin-right:10px;
+  }
+  .admin-box button.action:disabled { background:#aaa; cursor:not-allowed; }
+  .admin-box button.secondary { background:var(--gold); }
+  .status-msg { font-size:0.95rem; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">&larr; मंदिर पृष्ठ पर वापस जाएँ</a>
+  <h1>🪔 आज का सुविचार</h1>
+
+  <div class="suvichar-card" id="suvicharCard">
+    <div class="suvichar-text" id="suvicharText">लोड हो रहा है...</div>
+    <div class="suvichar-date" id="suvicharDate"></div>
+  </div>
+
+  <div class="login-bar" id="loginBar">
+    <button id="adminLoginBtn">Admin Login</button>
+  </div>
+
+  <div class="admin-box" id="adminBox">
+    <h3>✨ नया सुविचार तैयार करें</h3>
+    <button class="action secondary" id="generateBtn">AI से सुविचार बनवाएं</button>
+    <textarea id="suvicharDraft" placeholder="यहाँ सुविचार लिखें या AI से बनवाकर बदलाव करें..."></textarea>
+    <br>
+    <button class="action" id="publishBtn">प्रकाशित करें</button>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+</div>
+
+<script>
+  function refreshAdminUI() {
+    const user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+    const loginBar = document.getElementById('loginBar');
+    const adminBox = document.getElementById('adminBox');
+    if (user) {
+      loginBar.innerHTML = '<button id="adminLogoutBtn">Logout (' + (user.email || 'Admin') + ')</button>';
+      document.getElementById('adminLogoutBtn').onclick = () => window.netlifyIdentity.logout();
+      adminBox.classList.add('show');
+    } else {
+      loginBar.innerHTML = '<button id="adminLoginBtn">Admin Login</button>';
+      document.getElementById('adminLoginBtn').onclick = () => window.netlifyIdentity.open();
+      adminBox.classList.remove('show');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on('init', refreshAdminUI);
+      window.netlifyIdentity.on('login', refreshAdminUI);
+      window.netlifyIdentity.on('logout', refreshAdminUI);
+      window.netlifyIdentity.init();
+    }
+    loadSuvichar();
+  });
+
+  async function loadSuvichar() {
+    const textEl = document.getElementById('suvicharText');
+    const dateEl = document.getElementById('suvicharDate');
+    try {
+      const res = await fetch('/.netlify/functions/get-suvichar');
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      if (!data.text) {
+        textEl.textContent = 'अभी तक कोई सुविचार प्रकाशित नहीं हुआ है।';
+        return;
+      }
+      textEl.textContent = data.text;
+      if (data.publishedAt) {
+        const d = new Date(data.publishedAt);
+        dateEl.textContent = 'प्रकाशित: ' + d.toLocaleDateString('hi-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    } catch (err) {
+      textEl.textContent = 'सुविचार लोड करने में समस्या आई।';
+    }
+  }
+
+  document.getElementById('generateBtn').addEventListener('click', async function () {
+    const btn = this;
+    const draft = document.getElementById('suvicharDraft');
+    const statusMsg = document.getElementById('statusMsg');
+    btn.disabled = true;
+    statusMsg.textContent = 'AI सुविचार बना रहा है...';
+    try {
+      const res = await fetch('/.netlify/functions/generate-suvichar');
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      draft.value = data.suggestion;
+      statusMsg.textContent = 'तैयार है — चाहें तो बदलाव करके प्रकाशित करें।';
+    } catch (err) {
+      statusMsg.textContent = '❌ ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('publishBtn').addEventListener('click', async function () {
+    const btn = this;
+    const draft = document.getElementById('suvicharDraft');
+    const statusMsg = document.getElementById('statusMsg');
+    const text = draft.value.trim();
+    if (!text) {
+      statusMsg.textContent = 'कृपया पहले कोई सुविचार लिखें या AI से बनवाएं।';
+      return;
+    }
+    btn.disabled = true;
+    statusMsg.textContent = 'प्रकाशित हो रहा है...';
+    try {
+      const res = await fetch('/.netlify/functions/save-suvichar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      statusMsg.textContent = '✅ सुविचार प्रकाशित हो गया!';
+      loadSuvichar();
+    } catch (err) {
+      statusMsg.textContent = '❌ ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
