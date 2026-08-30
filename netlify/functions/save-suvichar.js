@@ -13,11 +13,7 @@ exports.handler = async function (event) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Suvichar text khali nahi ho sakta.' }) };
     }
 
-    const store = getStore({
-      name: 'suvichar',
-      siteID: process.env.BLOBS_SITE_ID,
-      token: process.env.BLOBS_TOKEN
-    });
+    const store = getStore('suvichar');   
     const record = {
       text,
       publishedAt: new Date().toISOString()
