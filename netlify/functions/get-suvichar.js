@@ -2,7 +2,12 @@ const { getStore } = require('@netlify/blobs');
 
 exports.handler = async function () {
   try {
-    const store = getStore({ name: 'suvichar' });
+    
+    const store = getStore({
+  name: 'suvichar',
+  siteID: process.env.BLOBS_SITE_ID,
+  token: process.env.BLOBS_TOKEN
+});
     const record = await store.get('latest', { type: 'json' });
 
     if (!record) {
