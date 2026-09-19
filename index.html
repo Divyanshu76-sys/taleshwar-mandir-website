@@ -1199,12 +1199,13 @@
   <p class="section-eyebrow" style="justify-content:center; color:var(--saffron);">सेवा एवं दान</p>
   <h2 class="section-title">मंदिर सेवा में सहभागी बनें</h2>
   <p class="section-lead">आपका दान मंदिर के रख-रखाव, अन्नदान एवं उत्सवों के सफल आयोजन में उपयोग होता है।</p>
-  <div class="daan-options">
-    <div class="daan-chip">₹101 — पूजा सेवा</div>
-    <div class="daan-chip active">₹501 — अन्नदान</div>
-    <div class="daan-chip">₹1100 — विशेष अभिषेक</div>
-    <div class="daan-chip">अन्य राशि</div>
-  </div>
+ <div class="daan-options">
+  <div class="daan-chip active" data-amount="51">₹51</div>
+  <div class="daan-chip" data-amount="101">₹101</div>
+  <div class="daan-chip" data-amount="501">₹501</div>
+  <div class="daan-chip" data-amount="1100">₹1100</div>
+  <div class="daan-chip" data-amount="">इच्छा अनुसार</div>
+</div>
   <a href="#" class="btn btn-primary">अभी दान करें</a>
   <p class="daan-note">सभी दान मंदिर ट्रस्ट खाते में सीधे प्राप्त होते हैं। रसीद आपके पंजीकृत मोबाइल नंबर पर भेजी जाएगी।</p>
     <div class="qr-donation-box" style="margin-top:30px;">
@@ -1635,5 +1636,22 @@
       updateAdminButton(null);
     });
   }
+</script>
+<script>
+  document.querySelectorAll('.daan-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.daan-chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+
+      const amount = this.getAttribute('data-amount');
+      const upiId = 'YOUR_UPI_ID_HERE';
+      const pn = 'Shri Taleshwar Mahadev Mandir';
+      let upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(pn)}&cu=INR`;
+      if (amount) upiUrl += `&am=${amount}`;
+
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+      document.getElementById('upiQR').src = qrUrl;
+    });
+  });
 </script>
 </body></html>
