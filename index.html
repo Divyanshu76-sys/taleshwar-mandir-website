@@ -1649,7 +1649,7 @@
   document.getElementById('danBtn').addEventListener('click', function(e) {
     e.preventDefault();
 
-    const upiId = 'YOUR_UPI_ID_HERE';
+    const upiId = '8178835087@upi';
     const pn = 'Shri Taleshwar Mahadev Mandir';
     let upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(pn)}&cu=INR`;
     if (selectedAmount) upiUrl += `&am=${selectedAmount}`;
